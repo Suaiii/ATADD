@@ -1,0 +1,5 @@
+Model,Setting,Main Metric,Train Time,GPU Cost,Notes
+wavlm_base,baseline,,,
+mert_base,baseline,,,
+wavlm_base_aug_noise,enhancement,,,
+
