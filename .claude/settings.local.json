@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python -c ':*)",
+      "Bash(python -c \"import sys; print\\(sys.executable\\); print\\(sys.version\\)\")",
+      "Bash(/c/Users/ZHUyi/AppData/Local/Microsoft/WindowsApps/python3:*)",
+      "Bash(cmd.exe:*)",
+      "Read(//c/Users/ZHUyi/anaconda3/**)",
+      "Read(//c/Users/ZHUyi/miniconda3/**)",
+      "Read(//c/ProgramData/anaconda3/**)",
+      "Bash(ls /c/Python*/python.exe)",
+      "Read(//c/Users/ZHUyi/AppData/Local/Programs/Python/**)",
+      "Read(//c/Users/ZHUyi/.conda/**)",
+      "Bash(ls /d/Python*/python.exe)",
+      "Bash(ls /e/Python*/python.exe)",
+      "Bash(conda info:*)",
+      "Bash(powershell.exe:*)",
+      "Bash(/e/anaconda/python.exe:*)"
+    ]
+  }
+}
