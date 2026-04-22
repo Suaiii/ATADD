@@ -6,6 +6,8 @@ This repository implements a reproducible baseline pipeline for the AT-ADD chall
 - Standard entry points: `run_train` and `run_eval`
 - Baselines: `WAVLM`, `MERT`, `XLSR`
 - One enhancement setting: waveform augmentation (noise + gain)
+- Current working scope: `track2` only
+- Default execution environment: remote cloud server instead of local machine
 
 ## 1) Environment
 
@@ -32,12 +34,19 @@ train/audio_0002.wav,1
 
 See examples in `data/manifests/*.example.csv`.
 
+For the current workflow, real `track2` manifests are expected to exist on the remote server. The local repo only ships examples.
+
 ## 3) Baseline Configs
 
 - `configs/baselines/wavlm_base.yaml`
 - `configs/baselines/mert_base.yaml`
 - `configs/baselines/xlsr_base.yaml`
 - `configs/experiments/wavlm_base_aug_noise.yaml` (enhancement)
+
+Related docs:
+
+- `docs/feature_extractor_survey.md`
+- `docs/track2_remote_quickstart.md`
 
 ## 4) Standard Commands
 
@@ -121,4 +130,3 @@ Use `docs/competition_brief.md` to fill:
 - hard constraints
 
 The challenge source link is already tracked in `memory.md`.
-

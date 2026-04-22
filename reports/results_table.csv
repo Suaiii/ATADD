@@ -1,5 +1,5 @@
-Model,Setting,Main Metric,Train Time,GPU Cost,Notes
-wavlm_base,baseline,,,
-mert_base,baseline,,,
-wavlm_base_aug_noise,enhancement,,,
-
+ExperimentID,Model,Setting,DataScope,TrainManifest,ValManifest,MainMetricName,MainMetricValue,TrainTime,PeakGPUMemoryMB,OutputDir,Status,Conclusion,Notes
+exp_track2_wavlm_base,wavlm_base,baseline,track2,,,,,,,outputs/wavlm_base,planned,Primary minimum baseline,
+exp_track2_xlsr_base,xlsr_base,baseline,track2,,,,,,,outputs/xlsr_base,planned,Speech SSL comparison baseline,
+exp_track2_wavlm_aug,wavlm_base_aug_noise,enhancement,track2,,,,,,,outputs/wavlm_base_aug_noise,planned,Augmentation sanity check,
+exp_track2_mert_base,mert_base,baseline,track2,,,,,,,outputs/mert_base,planned,Reserve backup frontend,
