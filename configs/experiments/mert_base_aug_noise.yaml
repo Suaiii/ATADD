@@ -1,0 +1,29 @@
+model:
+  name: mert_base_aug_noise
+  pretrained_name: m-a-p/MERT-v1-95M
+  freeze_backbone: true
+  dropout: 0.1
+
+data:
+  sample_rate: 16000
+  max_seconds: 5.0
+  num_classes: 2
+  audio_column: audio_path
+  label_column: label
+
+train:
+  epochs: 5
+  batch_size: 8
+  lr: 0.001
+  weight_decay: 0.01
+  grad_clip: 1.0
+  main_metric: accuracy
+  early_stop_patience: 10
+  num_workers: 2
+
+augment:
+  enable: true
+  noise_prob: 0.7
+  noise_scale: 0.004
+  gain_prob: 0.3
+  gain_db: 4.0

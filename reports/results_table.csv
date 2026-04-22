@@ -1,5 +1,6 @@
-Model,Setting,Main Metric,Train Time,GPU Cost,Notes
-wavlm_base,baseline,,,
-mert_base,baseline,,,
-wavlm_base_aug_noise,enhancement,,,
-
+ExperimentID,Model,Setting,DataScope,TrainManifest,ValManifest,MainMetricName,MainMetricValue,TrainTime,PeakGPUMemoryMB,OutputDir,Status,Conclusion,Notes
+exp_track2_wavlm_base,wavlm_base,baseline,track2,data/manifests/track2_train_balanced_500.csv,data/manifests/track2_dev_balanced_150.csv,accuracy,0.5942,104.81s,2779.21,/root/autodl-tmp/ATADD/outputs/track2_subset_wavlm_base_v1,completed,Track2 subset minimum baseline ran successfully,macro_f1=0.5876 epochs=3 balanced subset train=4000 dev=1200
+exp_track2_xlsr_base,xlsr_base,baseline,track2,data/manifests/track2_train_balanced_500.csv,data/manifests/track2_dev_balanced_150.csv,accuracy,0.5000,137.81s,4845.05,/root/autodl-tmp/ATADD/outputs/track2_subset_xlsr_base_v1,completed,Under current subset setting XLSR underperforms WAVLM,macro_f1=0.3333 epochs=3 likely collapsed toward single-class prediction
+exp_track2_wavlm_aug,wavlm_base_aug_noise,enhancement,track2,data/manifests/track2_train_balanced_500.csv,data/manifests/track2_dev_balanced_150.csv,accuracy,0.5967,102.83s,2779.21,/root/autodl-tmp/ATADD/outputs/track2_subset_wavlm_base_aug_v1,completed,Waveform augmentation slightly beat base,macro_f1=0.5909 epochs=3 noise+gain improves acc by 0.0025 on subset
+exp_track2_mert_base,mert_base,baseline,track2,data/manifests/track2_train_balanced_500.csv,data/manifests/track2_dev_balanced_150.csv,accuracy,0.6542,66.35s,2469.81,/root/autodl-tmp/ATADD/outputs/track2_subset_mert_base_v1,completed,MERT is the current best backbone on the balanced subset,macro_f1=0.6531 epochs=3 best_epoch=1
+exp_track2_mert_aug,mert_base_aug_noise,enhancement,track2,data/manifests/track2_train_balanced_500.csv,data/manifests/track2_dev_balanced_150.csv,accuracy,0.6358,68.16s,2469.81,/root/autodl-tmp/ATADD/outputs/track2_subset_mert_base_aug_v1,completed,Waveform augmentation did not beat the MERT baseline,macro_f1=0.6345 epochs=3 best_epoch=2
