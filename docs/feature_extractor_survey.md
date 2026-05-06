@@ -81,28 +81,39 @@
 | `XLSR baseline` | `xlsr_base` | `0.5000` | `0.3333` | `137.81s` | `4845.05MB` | 当前设置下明显弱于 `WAVLM`，疑似偏单类预测 |
 | `MERT baseline` | `mert_base` | `0.6542` | `0.6531` | `66.35s` | `2469.81MB` | 当前子集上整体最佳 |
 | `MERT + noise/gain` | `mert_base_aug_noise` | `0.6358` | `0.6345` | `68.16s` | `2469.81MB` | 未超过 `MERT baseline` |
+| `HuBERT baseline` | `hubert_base` | `0.6183` | `0.6168` | `73.04s` | `2557.66MB` | 介于 `WAVLM` 与 `MERT` 之间，纯 SSL 略胜 `WAVLM` |
+| `MERT-330M baseline` | `mert_v1_330m` | `0.6792` | `0.6720` | `199.70s` | `2880.48MB` | 比 `MERT-95M` 高 2.5 acc / 1.9 f1，验证同系列放大有正收益 |
+| `AST AudioSet baseline` | `ast_audioset` | `0.7600` | `0.7562` | `154.16s` | `551.55MB` | 当前所有 backbone 最强，且峰值显存比波形 SSL 小 5 倍 |
 
 ### 实验解读
 
 - `WAVLM` 已经证明自己是可运行、可增强、可复现的语音前端。
 - `XLSR` 在当前子集和训练轮数下明显落后，不适合作为当前第一优先方案。
-- `MERT` 在当前平衡子集上是最强结果，说明 `track2` 确实值得认真保留“通用音频前端”路线。
+- `MERT` 在当前平衡子集上长期可靠，且 `MERT-95M -> MERT-330M` 还能继续涨点，说明音乐/通用音频 SSL 路线没到天花板。
+- `HuBERT` 单纯 SSL 配方比 `WAVLM` 略好，说明 `WAVLM` 的 denoise 联合预训练在 deepfake 子集上不是关键差异化。
+- `AST` 把"频谱图 + AudioSet 音频事件预训练"路线打到 0.76，**比所有波形 SSL 都明显高一个台阶**，且因 backbone 冻结后等价于一次前向，显存只有 551MB。说明 track2 的伪造痕迹可能更适合在频谱级而不是波形级捕捉。
 - `noise + gain` 对 `WAVLM` 是正收益，但对 `MERT` 没有带来提升，因此增强策略不应直接跨 backbone 平移结论。
 
 ## 6. 当前结论
 
 ### 当前推荐顺序
 
-1. `MERT`
-2. `WAVLM`
-3. `XLSR`
+1. `AST` (AudioSet 频谱图)
+2. `MERT-330M`
+3. `MERT-95M`
+4. `HuBERT`
+5. `WAVLM`
+6. `XLSR`
 
 ### 当前判断
 
-- `MERT` 已从“理论备选”提升为“当前第一优先候选”，因为它在这轮 `track2` 平衡子集上取得了最好的 `accuracy` 和 `macro_f1`，且训练耗时和显存都不高。
-- `WAVLM` 仍然是非常稳的主线，因为它的链路最清晰，增强也已有正收益证据。
+- `AST` 已从"备选频谱图路线"上升为"当前第一优先候选"，在 track2 平衡子集上 acc=0.7600/f1=0.7562，比第二名 MERT-330M 高约 8 个点，且峰值显存只有 551MB。下一步的训练增强、调度、扩数据都应优先以 AST 作为主线背骨。
+- `MERT-330M` 是当前波形 SSL 的最强项，比 `MERT-95M` 涨 2.5 acc / 1.9 f1，确认"同系列放大"在这一阶段还有红利；但代价是训练耗时翻倍（66s -> 200s）。作为非 AST 路线的次优选项保留。
+- `MERT-95M` 仍是性价比最佳的小模型 baseline，适合做快速增强对照（changes-per-hour 高）。
+- `HuBERT` 略胜 `WAVLM`（+2.4 acc），说明 `WAVLM` 的 denoise 联合预训练在当前子集和 3 epoch 下不构成显著优势，可以把语音 SSL 主线收窄到 `HuBERT`。
+- `WAVLM` 退居"已有正收益增强证据"的二线，不再作为第一优先 backbone。
 - `XLSR` 暂时保留为对照组，不建议投入更多优先资源。
-- `CSAM` 仍然应继续作为训练增强策略调研，不进入第一轮 backbone 实现优先级。
+- `CSAM` 仍然作为训练增强策略调研，不进入第一轮 backbone 实现优先级。
 
 ### 第一批最值得保留的增强
 
@@ -127,10 +138,12 @@
 已经完成的部分：
 
 - 四个方向的文献和方法定位已整理完成。
-- `WAVLM vs XLSR vs MERT` 的第一轮 backbone 对照已经形成。
-- `WAVLM baseline vs WAVLM + noise/gain` 的增强证据线已经形成。
-- `MERT baseline vs MERT + noise/gain` 的增强对照也已经形成。
-- 已经可以给团队一个明确的当前建议顺序。
+- `WAVLM vs XLSR vs MERT` 的第一轮波形 SSL 对照已经形成。
+- `HuBERT` 的语音 SSL 第二代表已加入对照，并验证其略胜 `WAVLM`。
+- `MERT-95M -> MERT-330M` 的同系列放大对照已经形成，确认放大有正收益。
+- `AST AudioSet` 作为频谱图路线已经接入并跑通，建立了远超波形 SSL 的新主线。
+- `WAVLM baseline vs WAVLM + noise/gain`、`MERT baseline vs MERT + noise/gain` 两组增强证据线已经形成。
+- 已经可以给团队一个明确的当前建议顺序：`AST > MERT-330M > MERT-95M > HuBERT > WAVLM > XLSR`。
 
 尚未完成的部分：
 
@@ -142,21 +155,23 @@
 
 ### 第一优先级
 
-- 在 `MERT` 和 `WAVLM` 上做第二类增强对比，优先 `SpecAugment` 或特征级遮挡。
-- 目标：判断“波形增强”和“谱域增强”哪条线更值得继续加资源。
+- 在 `AST` 上做更长 epoch（5-10 ep）和更大子集复验，确认 0.76 不是 3 epoch 偶然结果。
+- 在 `AST` 上验证频域增强（`SpecAugment`、time/freq mask），先于波形增强。
+- 目标：判断 AST 在跨数据规模下的稳定性与可继续提升空间。
 
 ### 第二优先级
 
-- 提高 `MERT` 和 `WAVLM` 的训练轮数，或扩大子集规模做一次更稳的复验。
-- 目标：确认当前排序不是 3 epoch 小实验偶然结果。
+- 在 `MERT-330M` 与 `AST` 上分别加 `SpecAugment`，做"波形 SSL × 频谱增强"和"频谱 backbone × 频谱增强"两条线的横向对照。
+- 改 pooling：当前对 AST/MERT 都用 `last_hidden_state.mean(dim=1)`，AST 的 `[CLS]` token 与多层加权（layer-wise attention pooling）值得各跑一组。
 
 ### 第三优先级
 
 - 继续调研 `CSAM` 的接入方式，明确它是作为训练目标增强、域泛化策略还是数据组织策略插入现有框架。
+- 评估 `BEATs` 是否值得手工接入（HF 无官方权重，需 Microsoft 原仓库），当 AST 在更大子集上保持优势时再启动。
 
 ### 第四优先级
 
-- 当 `MERT` 和 `WAVLM` 的主线结论稳定后，再决定是否投入全量数据或重复实验做参赛化固化。
+- 当 `AST` 与 `MERT-330M` 的主线结论稳定后，再决定是否投入全量数据或重复实验做参赛化固化。
 
 ## 9. 与队友工作的边界
 
