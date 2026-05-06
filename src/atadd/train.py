@@ -128,6 +128,8 @@ def main() -> None:
         num_classes=cfg.data.num_classes,
         dropout=cfg.model.dropout,
         freeze_backbone=cfg.model.freeze_backbone,
+        kind=cfg.model.kind,
+        feature_extractor_name=cfg.model.feature_extractor_name,
     ).to(device)
 
     optimizer = torch.optim.AdamW(

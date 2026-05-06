@@ -13,6 +13,8 @@ class ModelConfig:
     pretrained_name: str
     freeze_backbone: bool = True
     dropout: float = 0.1
+    kind: str = "waveform"
+    feature_extractor_name: Optional[str] = None
 
 
 @dataclass

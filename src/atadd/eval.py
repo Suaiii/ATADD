@@ -90,6 +90,8 @@ def main() -> None:
         num_classes=cfg.data.num_classes,
         dropout=cfg.model.dropout,
         freeze_backbone=False,
+        kind=cfg.model.kind,
+        feature_extractor_name=cfg.model.feature_extractor_name,
     ).to(device)
 
     checkpoint = torch.load(args.checkpoint, map_location=device)
