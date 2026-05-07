@@ -39,7 +39,7 @@ class AudioBackboneClassifier(nn.Module):
         else:
             raise ValueError(f"Unsupported model kind: {kind!r}")
 
-    def forward(self, input_values: torch.Tensor) -> torch.Tensor:
+    def extract_features(self, input_values: torch.Tensor) -> torch.Tensor:
         if self.feature_extractor is not None:
             device = input_values.device
             wav_list = [w.detach().cpu().numpy() for w in input_values]
@@ -53,6 +53,10 @@ class AudioBackboneClassifier(nn.Module):
             backbone_input = input_values
 
         out = self.backbone(input_values=backbone_input)
-        pooled = out.last_hidden_state.mean(dim=1)
+        return out.last_hidden_state
+
+    def forward(self, input_values: torch.Tensor) -> torch.Tensor:
+        hidden = self.extract_features(input_values)
+        pooled = hidden.mean(dim=1)
         logits = self.classifier(self.dropout(pooled))
         return logits
