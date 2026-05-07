@@ -26,16 +26,20 @@ logits (B, num_classes)
 
 ## 3. 各 backbone 的 (T, D) 表（max_seconds=5.0, sample_rate=16000）
 
+数值均为实测（除 `wavlm_base` / `xlsr_base` / `mert_base` 未 dump，但同架构系列推断一致）。
+
 | backbone | kind | T | D | 备注 |
 | --- | --- | --- | --- | --- |
-| `wavlm_base` | waveform | ~249 | 768 | 语音 SSL，50Hz frame rate |
-| `xlsr_base` | waveform | ~249 | 1024 | 语音 SSL，50Hz |
-| `hubert_base` | waveform | ~249 | 768 | 语音 SSL，50Hz |
-| `mert_base` (95M) | waveform | ~374 | 768 | 音乐 SSL，75Hz |
-| `mert_v1_330m` | waveform | ~374 | 1024 | 音乐 SSL，75Hz |
-| `ast_audioset` | spectrogram | ~1214 | 768 | AudioSet，索引 0 是 `[CLS]` token；T 由 AST FeatureExtractor 的 `max_length` 决定，**与 max_seconds 无直接关系** |
+| `wavlm_base` | waveform | 249 | 768 | 语音 SSL，wav2vec2-style 50Hz（推断） |
+| `xlsr_base` | waveform | 249 | 1024 | 语音 SSL，50Hz（推断） |
+| `hubert_base` | waveform | 249 | 768 | 语音 SSL，50Hz（实测） |
+| `mert_base` (95M) | waveform | 249 | 768 | 音乐 SSL，50Hz（按 MERT-330M 实测推断） |
+| `mert_v1_330m` | waveform | 249 | 1024 | 音乐 SSL，50Hz（实测） |
+| `ast_audioset` | spectrogram | 1214 | 768 | AudioSet，索引 0/1 是 `[CLS]` / 蒸馏 token（共 2 个 prepended token + 1212 patch）；T 由 AST FeatureExtractor 的 `max_length` 决定，**与 max_seconds 无直接关系** |
 
-第一次 dump 出来后用 `python -m scripts.inspect_features <path>.pt` 直接看实际 T。
+> 之前文档曾误写 MERT 是 75Hz/T~374，实际 MERT-v1 也是 wav2vec2-style 卷积前端，输出 50Hz/T=249。
+
+如有疑问，对任意 dump `.pt` 跑 `python -m scripts.inspect_features <path>.pt` 即可看实际 T。
 
 ## 4. Dump 文件 schema
 
@@ -85,17 +89,22 @@ for feats, labels in train_loader:
 - head 训练时**不再需要 backbone**，纯 CPU 数据 → GPU 只需要喂 head。可以在笔记本上迭代。
 - 当前所有样本都已 pad 到同一个 `T`，**不需要 attention mask**。如果以后切到变长输入，schema 会增加 `lengths` 字段，会另行通知。
 
-## 6. 推荐 dump 顺序（首批）
+## 6. 首批 dump（已完成 2026-05-07）
 
-按对后端实验价值排序：
+实测大小如下，全部位于服务器 `/root/autodl-tmp/ATADD/features/`：
 
-| 优先级 | Backbone | Splits | 大致大小（fp16） |
-| --- | --- | --- | --- |
-| P0 | `ast_audioset` | `track2_train_balanced_500`, `track2_dev_balanced_150` | ~7 GB + ~2 GB |
-| P1 | `mert_v1_330m` | 同上两份 | ~3 GB + ~1 GB |
-| P2 | `hubert_base` | 同上两份 | ~2 GB + ~0.5 GB |
+| 优先级 | 文件名 | 形状 | 大小 (fp16) | 备注 |
+| --- | --- | --- | --- | --- |
+| P0 | `ast_audioset__track2_train_balanced_500.pt` | (4000, 1214, 768) | 7.0 GB | AST 当前最强 backbone，含 [CLS]/dist 双 token |
+| P0 | `ast_audioset__track2_dev_balanced_150.pt` | (1200, 1214, 768) | 2.1 GB | |
+| P1 | `mert_v1_330m__track2_train_balanced_500.pt` | (4000, 249, 1024) | 2.0 GB | 音乐 SSL 最强 |
+| P1 | `mert_v1_330m__track2_dev_balanced_150.pt` | (1200, 249, 1024) | 584 MB | |
+| P2 | `hubert_base__track2_train_balanced_500.pt` | (4000, 249, 768) | 1.5 GB | 语音 SSL 系列代表 |
+| P2 | `hubert_base__track2_dev_balanced_150.pt` | (1200, 249, 768) | 438 MB | |
 
-P0 优先是因为 AST 是当前最强 backbone，head 替换的边际收益最可能在它上面体现。
+合计 ~14 GB。后端实验**先在 P0 上跑通**再向下扩展（AST 的预期收益空间最大）。
+
+如需新 backbone（WAVLM、MERT-95M、XLSR）或更大 split，告诉前端这边重新 dump，**不要在你这边重跑 backbone**。
 
 ## 7. 命名规范与重新 dump
 
