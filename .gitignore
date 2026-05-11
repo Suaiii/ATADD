@@ -9,4 +9,4 @@ checkpoints/
 *.pt
 *.pth
 *.log
-
+.local/

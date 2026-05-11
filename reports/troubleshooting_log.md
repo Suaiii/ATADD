@@ -78,4 +78,42 @@
 - Log path: -
 - Output dir: -
 - Next action: 后续做服务器同步默认走"本地 push 到服务器"，不依赖 server 出网到 GitHub。如果将来 autodl 放开 443 再切回 `git pull origin main`。
+---
 
+## 2026-05-12: `ast_audioset_ft_lr1e5_long` underperformed on the larger balanced subset
+
+- Date: 2026-05-12
+- Experiment ID: exp_track2_ast_audioset_ft_lr1e5_long_v2
+- Model: ast_audioset_ft_lr1e5_long
+- Config: configs/experiments/ast_audioset_ft_lr1e5_long.yaml
+- Train Manifest: data/manifests/track2_train_balanced_2000.csv
+- Val Manifest: data/manifests/track2_dev_balanced_500.csv
+- Stage: train
+- Device: server cuda
+- Symptom: The lower-learning-rate AST run stayed below the stronger `ast_audioset_ft` recipe on the same larger balanced subset.
+- Root cause: Lowering the learning rate from `2e-5` to `1e-5` and extending training did not improve adaptation in this setting.
+- Fix: Stop the low-LR run and reallocate the single-GPU slot to a higher-value multi-seed stability rerun of `ast_audioset_ft`.
+- Status: closed without promotion
+- Log path: /root/autodl-tmp/ATADD/logs/ast_audioset_ft_lr1e5_long_v2.log
+- Output dir: /root/autodl-tmp/ATADD/outputs/track2_subset_ast_audioset_ft_lr1e5_long_v2
+- Next action: Keep `ast_audioset_ft` as the main AST recipe and prioritize stability checks before trying new AST-specific augmentation.
+
+---
+
+## 2026-05-12: `ast_audioset_ft` seed7 rerun validated stability
+
+- Date: 2026-05-12
+- Experiment ID: exp_track2_ast_audioset_ft_v2_seed7
+- Model: ast_audioset_ft
+- Config: configs/experiments/ast_audioset_ft.yaml
+- Train Manifest: data/manifests/track2_train_balanced_2000.csv
+- Val Manifest: data/manifests/track2_dev_balanced_500.csv
+- Stage: train+eval
+- Device: server cuda
+- Symptom: Need to confirm whether the strong AST result on the larger balanced subset was a single-seed fluctuation.
+- Root cause: Not a failure. This run was launched as a stability verification after the seed42 run reached `accuracy=0.97625`.
+- Fix: Re-run the same AST fine-tuning recipe with `seed=7` and compare the best validation checkpoint and final eval summary.
+- Status: validated
+- Log path: /root/autodl-tmp/ATADD/logs/ast_audioset_ft_v2_seed7.log
+- Output dir: /root/autodl-tmp/ATADD/outputs/track2_subset_ast_audioset_ft_v2_seed7
+- Next action: Promote AST full fine-tuning as the current primary recipe and decide whether the next single-GPU slot goes to another seed or to AST-specific augmentation such as SpecAugment.
