@@ -140,6 +140,26 @@
 
 ---
 
+## 2026-05-13: Large-batch seed7 confirms the need for best-checkpoint selection
+
+- Date: 2026-05-13
+- Experiment ID: exp_track2_ast_audioset_ft_v2_bs128_seed7
+- Model: ast_audioset_ft
+- Config: configs/experiments/ast_audioset_ft.yaml
+- Train Manifest: data/manifests/track2_train_balanced_2000.csv
+- Val Manifest: data/manifests/track2_dev_balanced_500.csv
+- Stage: train+eval
+- Device: server cuda, single NVIDIA RTX PRO 6000 Blackwell Server Edition
+- Symptom: Need to check whether the `bs128` improvement was stable beyond seed 42.
+- Root cause: Not a failure. This was a seed stability check for the large-batch recipe.
+- Fix: Re-run the same `batch_size=128` AST fine-tuning recipe with `seed=7`.
+- Status: validated but not promoted over seed42
+- Log path: /root/autodl-tmp/ATADD/logs/ast_audioset_ft_v2_bs128_seed7.log
+- Output dir: /root/autodl-tmp/ATADD/outputs/track2_subset_ast_audioset_ft_v2_bs128_seed7
+- Next action: Keep `bs128 seed42` plus optional `bs32 lr=1e-6` calibration as the current best recipe. The seed7 run reached `accuracy=0.98725` at epoch 3, then dropped to about `0.979` at epochs 4-5, so large-batch training must rely on best checkpoint / early stopping rather than the final epoch.
+
+---
+
 ## 2026-05-12: Disjoint dev checks reduce the overfitting concern for `bs128`
 
 - Date: 2026-05-12

@@ -67,6 +67,7 @@
 | `ast_audioset_ft_v2_seed7` | `batch_size=4`, `seed=7` | `0.9833` | `0.9832` | 换 seed 后继续高分 |
 | `ast_audioset_ft_v2_seed123` | `batch_size=4`, `seed=123` | `0.9783` | `0.9782` | 第三组 seed 仍稳定 |
 | `ast_audioset_ft_v2_bs128_seed42` | `batch_size=128`, `seed=42` | `0.9895` | `0.9895` | 大 batch 同时提升吞吐和指标 |
+| `ast_audioset_ft_v2_bs128_seed7` | `batch_size=128`, `seed=7` | `0.9873` | `0.9872` | 大 batch 换 seed 仍强，但未超过 seed42 |
 | `ast_audioset_ft_v2_bs128_to_bs8_seed42` | 从 `bs128 best.pt` 接 `bs8, lr=5e-6, 3 epochs` | `0.9875` | `0.9875` | 过强小 batch 精修会扰动最优点 |
 | `ast_audioset_ft_v2_bs128_to_bs32_lr1e6_seed42` | 从 `bs128 best.pt` 接 `bs32, lr=1e-6, 1 epoch` | `0.9898` | `0.9897` | 温和精修略高于 bs128 |
 
@@ -79,7 +80,7 @@
 | `bs128 -> bs32 lr1e-6 best.pt` | `track2_dev_disjoint_alt30.csv` | `0.9917` | `0.9917` | 温和精修在 disjoint 小切片上更好 |
 | `bs128 -> bs32 lr1e-6 best.pt` | `track2_dev_disjoint_cap500.csv` | `0.9926` | `0.9925` | 温和精修在较大 disjoint remainder 上也更好 |
 
-阶段判断：`bs128` 不是单纯“把显存吃满”的工程优化，而是当前最有效的 AST 训练策略之一；`bs32, lr=1e-6, 1 epoch` 可以作为轻量校准尾巴保留。`bs8, lr=5e-6, 3 epochs` 的下降说明两阶段训练可行，但小 batch 接管必须非常温和。
+阶段判断：`bs128` 不是单纯“把显存吃满”的工程优化，而是当前最有效的 AST 训练策略之一；`bs32, lr=1e-6, 1 epoch` 可以作为轻量校准尾巴保留。`bs128 seed7` 在 epoch 3 后下降到 `0.979` 左右，说明大 batch 也不能无脑多训，必须保留 best checkpoint / early stopping。`bs8, lr=5e-6, 3 epochs` 的下降说明两阶段训练可行，但小 batch 接管必须非常温和。
 
 ## 4. 当前结论
 
