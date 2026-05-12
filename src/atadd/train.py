@@ -32,6 +32,12 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--lr", default=None, type=float)
     p.add_argument("--num-workers", default=None, type=int)
     p.add_argument("--enable-augment", action="store_true")
+    p.add_argument(
+        "--init-checkpoint",
+        default=None,
+        type=str,
+        help="Optional checkpoint used to initialize model weights before training.",
+    )
     return p.parse_args()
 
 
@@ -132,6 +138,13 @@ def main() -> None:
         feature_extractor_name=cfg.model.feature_extractor_name,
     ).to(device)
 
+    init_checkpoint_path = None
+    if args.init_checkpoint is not None:
+        init_checkpoint_path = str(Path(args.init_checkpoint).resolve())
+        checkpoint = torch.load(args.init_checkpoint, map_location=device)
+        model.load_state_dict(checkpoint["model_state"], strict=True)
+        print(f"Initialized model weights from {init_checkpoint_path}")
+
     optimizer = torch.optim.AdamW(
         [p for p in model.parameters() if p.requires_grad],
         lr=cfg.train.lr,
@@ -187,6 +200,7 @@ def main() -> None:
                     "pretrained_name": cfg.model.pretrained_name,
                     "num_classes": cfg.data.num_classes,
                     "dropout": cfg.model.dropout,
+                    "init_checkpoint": init_checkpoint_path,
                 },
                 out_dir / "best.pt",
             )
@@ -244,6 +258,7 @@ def main() -> None:
         "elapsed_seconds": elapsed_sec,
         "peak_gpu_memory_mb": gpu_mem_mb,
         "output_dir": str(out_dir.resolve()),
+        "init_checkpoint": init_checkpoint_path,
     }
     save_json(out_dir / "run_summary.json", summary)
     print("Training completed.")
@@ -252,4 +267,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

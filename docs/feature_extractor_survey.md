@@ -52,24 +52,56 @@
 | `ast_audioset_long` | 冻结 backbone，训练 `8 epochs` | `0.8100` | `0.8094` | `1216.89s` | `551.55MB` | 仅靠更长训练就继续涨点 |
 | `ast_audioset_ft` | 解冻 backbone，全量微调 `5 epochs` | `0.9533` | `0.9533` | `520.19s` | `4143.09MB` | 当前子集上的最高点，说明 AST 真正上限远高于冻结线性头 |
 
+### AST 大子集稳定性与 batch 策略
+
+后续实验切到更大的 track2 平衡子集：
+
+- `train=16000`
+- `dev=4000`
+- train/dev 分别来自官方 train/dev，不混合官方划分
+- manifest: `track2_train_balanced_2000.csv` / `track2_dev_balanced_500.csv`
+
+| 实验 | 设置 | Accuracy | Macro F1 | 结论 |
+| --- | --- | --- | --- | --- |
+| `ast_audioset_ft_v2` | `batch_size=4`, `seed=42` | `0.9763` | `0.9762` | 大子集上依然稳定强 |
+| `ast_audioset_ft_v2_seed7` | `batch_size=4`, `seed=7` | `0.9833` | `0.9832` | 换 seed 后继续高分 |
+| `ast_audioset_ft_v2_seed123` | `batch_size=4`, `seed=123` | `0.9783` | `0.9782` | 第三组 seed 仍稳定 |
+| `ast_audioset_ft_v2_bs128_seed42` | `batch_size=128`, `seed=42` | `0.9895` | `0.9895` | 大 batch 同时提升吞吐和指标 |
+| `ast_audioset_ft_v2_bs128_to_bs8_seed42` | 从 `bs128 best.pt` 接 `bs8, lr=5e-6, 3 epochs` | `0.9875` | `0.9875` | 过强小 batch 精修会扰动最优点 |
+| `ast_audioset_ft_v2_bs128_to_bs32_lr1e6_seed42` | 从 `bs128 best.pt` 接 `bs32, lr=1e-6, 1 epoch` | `0.9898` | `0.9897` | 温和精修略高于 bs128 |
+
+为了检查 `0.9895+` 是否只是当前 dev 子集过拟合，又用官方 dev 中未进入当前 dev manifest 的样本做了两份 disjoint eval：
+
+| Checkpoint | Disjoint manifest | Accuracy | Macro F1 | 结论 |
+| --- | --- | --- | --- | --- |
+| `bs128 best.pt` | `track2_dev_disjoint_alt30.csv` | `0.9875` | `0.9875` | 完全不重叠的平衡小切片仍高分 |
+| `bs128 best.pt` | `track2_dev_disjoint_cap500.csv` | `0.9895` | `0.9894` | 较大不重叠 dev remainder 仍高分 |
+| `bs128 -> bs32 lr1e-6 best.pt` | `track2_dev_disjoint_alt30.csv` | `0.9917` | `0.9917` | 温和精修在 disjoint 小切片上更好 |
+| `bs128 -> bs32 lr1e-6 best.pt` | `track2_dev_disjoint_cap500.csv` | `0.9926` | `0.9925` | 温和精修在较大 disjoint remainder 上也更好 |
+
+阶段判断：`bs128` 不是单纯“把显存吃满”的工程优化，而是当前最有效的 AST 训练策略之一；`bs32, lr=1e-6, 1 epoch` 可以作为轻量校准尾巴保留。`bs8, lr=5e-6, 3 epochs` 的下降说明两阶段训练可行，但小 batch 接管必须非常温和。
+
 ## 4. 当前结论
 
 ### 当前排序
 
-1. `AST AudioSet full fine-tuning`
-2. `AST AudioSet frozen backbone + longer training`
-3. `AST AudioSet baseline`
-4. `MERT-v1-330M`
-5. `MERT-base`
-6. `HuBERT-base`
-7. `WAVLM + noise/gain`
-8. `WAVLM-base`
-9. `XLSR-base`
+1. `AST AudioSet full fine-tuning + batch_size=128 + optional bs32 low-lr calibration`
+2. `AST AudioSet full fine-tuning, batch_size=4, multi-seed stable`
+3. `AST AudioSet frozen backbone + longer training`
+4. `AST AudioSet baseline`
+5. `MERT-v1-330M`
+6. `MERT-base`
+7. `HuBERT-base`
+8. `WAVLM + noise/gain`
+9. `WAVLM-base`
+10. `XLSR-base`
 
 ### 直接结论
 
 - `AST` 已经不是“可试试的备选”，而是当前最明确的主线。
-- `AST` 的上限不在冻结线性头；一旦解冻 backbone，当前平衡子集上能直接到 `0.9533 / 0.9533`。
+- `AST` 的上限不在冻结线性头；一旦解冻 backbone，当前平衡子集上能直接到 `0.9533 / 0.9533`，大子集和大 batch 后已推进到 `0.9895+`。
+- `batch_size=128` 当前应视为主训练策略，而不是单纯提速技巧；它在单卡上吃满显存并刷新了主 dev 指标。
+- 对过拟合的担心目前被 disjoint dev 检查部分缓解：`bs128` 和 `bs128 -> bs32 lr1e-6` 在未重叠 dev 样本上仍保持 `0.9875` 到 `0.9926`。
 - `MERT-v1-330M` 仍然是最值得保留的 waveform 路线备选。
 - `HuBERT / WAVLM / XLSR` 这一组现在主要承担对照作用，不再是第一优先。
 - `noise + gain` 这种波形增强不能简单外推到所有 backbone，至少对 `MERT` 不成立。

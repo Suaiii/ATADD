@@ -117,3 +117,63 @@
 - Log path: /root/autodl-tmp/ATADD/logs/ast_audioset_ft_v2_seed7.log
 - Output dir: /root/autodl-tmp/ATADD/outputs/track2_subset_ast_audioset_ft_v2_seed7
 - Next action: Promote AST full fine-tuning as the current primary recipe and decide whether the next single-GPU slot goes to another seed or to AST-specific augmentation such as SpecAugment.
+
+---
+
+## 2026-05-12: Large-batch AST run improved both throughput and accuracy
+
+- Date: 2026-05-12
+- Experiment ID: exp_track2_ast_audioset_ft_v2_bs128_seed42
+- Model: ast_audioset_ft
+- Config: configs/experiments/ast_audioset_ft.yaml
+- Train Manifest: data/manifests/track2_train_balanced_2000.csv
+- Val Manifest: data/manifests/track2_dev_balanced_500.csv
+- Stage: train+eval
+- Device: server cuda, single NVIDIA RTX PRO 6000 Blackwell Server Edition
+- Symptom: The original AST fine-tuning recipe used only about 4-5 GB GPU memory, leaving most of the single-card server idle.
+- Root cause: Batch size was conservative for compatibility, not tuned for the available 97.9 GB GPU.
+- Fix: Increase batch size to 128 and rerun the same AST full fine-tuning recipe with seed 42.
+- Status: promoted
+- Log path: /root/autodl-tmp/ATADD/logs/ast_audioset_ft_v2_bs128_seed42.log
+- Output dir: /root/autodl-tmp/ATADD/outputs/track2_subset_ast_audioset_ft_v2_bs128_seed42
+- Next action: Treat `/root/autodl-tmp/ATADD/outputs/track2_subset_ast_audioset_ft_v2_bs128_seed42/best.pt` as the high-throughput baseline; best epoch is 4 with `accuracy=0.9895`, `macro_f1=0.9895`, and peak GPU memory about 91.2 GB.
+
+---
+
+## 2026-05-12: Disjoint dev checks reduce the overfitting concern for `bs128`
+
+- Date: 2026-05-12
+- Experiment ID: exp_track2_ast_audioset_ft_v2_bs128_eval_alt30 / exp_track2_ast_audioset_ft_v2_bs128_eval_cap500
+- Model: ast_audioset_ft
+- Config: configs/experiments/ast_audioset_ft.yaml
+- Train Manifest: data/manifests/track2_train_balanced_2000.csv
+- Val Manifest: data/manifests/track2_dev_disjoint_alt30.csv and data/manifests/track2_dev_disjoint_cap500.csv
+- Stage: eval
+- Device: server cuda
+- Symptom: After `bs128` reached `accuracy=0.9895`, the main concern was whether the score came from overfitting the current balanced dev subset.
+- Root cause: Not a failure. The original dev manifest is a balanced sample from official dev; an independent dev slice was needed to check whether the checkpoint still generalizes.
+- Fix: Evaluate the same `bs128` checkpoint on two disjoint official-dev manifests: a fully balanced `30 x type x label` slice and a larger capped remainder slice.
+- Status: validated
+- Log path: /root/autodl-tmp/ATADD/logs/eval_ast_bs128_seed42_disjoint_alt30.log and /root/autodl-tmp/ATADD/logs/eval_ast_bs128_seed42_disjoint_cap500.log
+- Output dir: /root/autodl-tmp/ATADD/outputs/eval_ast_bs128_seed42_disjoint_alt30 and /root/autodl-tmp/ATADD/outputs/eval_ast_bs128_seed42_disjoint_cap500
+- Next action: Keep `bs128` as a valid main checkpoint; disjoint results were `alt30 accuracy=0.9875`, `cap500 accuracy=0.9895`, so the high score is unlikely to be only a current-dev artifact.
+
+---
+
+## 2026-05-12: Small-batch refinement is schedule-sensitive
+
+- Date: 2026-05-12
+- Experiment ID: exp_track2_ast_audioset_ft_v2_bs128_to_bs8_seed42 / exp_track2_ast_audioset_ft_v2_bs128_to_bs32_lr1e6_seed42
+- Model: ast_audioset_ft
+- Config: configs/experiments/ast_audioset_ft.yaml
+- Train Manifest: data/manifests/track2_train_balanced_2000.csv
+- Val Manifest: data/manifests/track2_dev_balanced_500.csv
+- Stage: train+eval
+- Device: server cuda
+- Symptom: A direct `bs128 -> bs8` continuation dropped from the `bs128` best score, raising an overfitting or refinement-instability concern.
+- Root cause: The `bs8, lr=5e-6, epochs=3` refinement likely disturbed an already good checkpoint; the issue was not simply that any post-training continuation overfits.
+- Fix: Add `--init-checkpoint` support in `src/atadd/train.py`, then compare two staged schedules from the same `bs128` checkpoint: aggressive `bs8, lr=5e-6, 3 epochs` versus gentle `bs32, lr=1e-6, 1 epoch`.
+- Status: partially validated
+- Log path: /root/autodl-tmp/ATADD/logs/ast_audioset_ft_v2_bs128_to_bs8_seed42.log and /root/autodl-tmp/ATADD/logs/ast_audioset_ft_v2_bs128_to_bs32_lr1e6_seed42.log
+- Output dir: /root/autodl-tmp/ATADD/outputs/track2_subset_ast_audioset_ft_v2_bs128_to_bs8_seed42 and /root/autodl-tmp/ATADD/outputs/track2_subset_ast_audioset_ft_v2_bs128_to_bs32_lr1e6_seed42
+- Next action: Prefer the gentle refinement if using a two-stage recipe. `bs8` reached only `accuracy=0.9875`, while `bs32, lr=1e-6, 1 epoch` reached `accuracy=0.98975` on the main dev and improved disjoint checks to `alt30 accuracy=0.9917`, `cap500 accuracy=0.9926`.
