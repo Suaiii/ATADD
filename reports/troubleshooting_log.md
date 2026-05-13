@@ -217,3 +217,23 @@
 - Log path: /root/autodl-tmp/ATADD/logs/ast_audioset_ft_v2_bs128_seed7_to_bs32_lr1e6_seed7.log
 - Output dir: /root/autodl-tmp/ATADD/outputs/track2_subset_ast_audioset_ft_v2_bs128_seed7_to_bs32_lr1e6_seed7
 - Next action: Treat `AST bs128 + gentle bs32 calibration` as the current primary recipe. The seed7 calibrated checkpoint reached `accuracy=0.9930`, `macro_f1=0.9930` on the main dev, and stayed strong on disjoint checks with `alt30 accuracy=0.9875`, `cap500 accuracy=0.9921`.
+
+---
+
+## 2026-05-13: Expanding the balanced train subset to 32000 pushes AST higher again
+
+- Date: 2026-05-13
+- Experiment ID: exp_track2_ast_audioset_ft_v3_train4000_bs128_seed7 / exp_track2_ast_audioset_ft_v3_train4000_bs128_to_bs32_lr1e6_seed7
+- Model: ast_audioset_ft
+- Config: configs/experiments/ast_audioset_ft.yaml
+- Train Manifest: data/manifests/track2_train_balanced_4000.csv
+- Val Manifest: data/manifests/track2_dev_balanced_500_v3.csv
+- Stage: train+eval
+- Device: server cuda, single NVIDIA RTX PRO 6000 Blackwell Server Edition
+- Symptom: After the 16000-train recipe reached `0.9930`, the next uncertainty was whether AST still benefits from more balanced training data or had already saturated on the smaller subset.
+- Root cause: Not a failure. This was a scale-up validation of the current AST main line under the largest balanced train subset that still fits the server disk budget.
+- Fix: Build a larger balanced subset with `train_per_group=4000` and `dev_per_group=500`, then run `bs128, seed=7` followed by the same gentle `bs32, lr=1e-6, 1 epoch` calibration.
+- Status: promoted
+- Log path: /root/autodl-tmp/ATADD/logs/ast_audioset_ft_v3_train4000_bs128_seed7.log and /root/autodl-tmp/ATADD/logs/ast_audioset_ft_v3_train4000_bs128_to_bs32_lr1e6_seed7.log
+- Output dir: /root/autodl-tmp/ATADD/outputs/track2_subset_ast_audioset_ft_v3_train4000_bs128_seed7 and /root/autodl-tmp/ATADD/outputs/track2_subset_ast_audioset_ft_v3_train4000_bs128_to_bs32_lr1e6_seed7
+- Next action: Treat the `32000-train bs128 + gentle bs32 calibration` checkpoint as the new best overall recipe. The large-batch stage reached `accuracy=0.9940` at epoch 4, the calibrated checkpoint reached `accuracy=0.99625`, and disjoint checks stayed extremely strong with `alt30 accuracy=1.0000`, `cap500 accuracy=0.9960`.
