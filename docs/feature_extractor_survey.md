@@ -70,6 +70,7 @@
 | `ast_audioset_ft_v2_bs128_seed7` | `batch_size=128`, `seed=7` | `0.9873` | `0.9872` | 大 batch 换 seed 仍强，但未超过 seed42 |
 | `ast_audioset_ft_v2_bs128_to_bs8_seed42` | 从 `bs128 best.pt` 接 `bs8, lr=5e-6, 3 epochs` | `0.9875` | `0.9875` | 过强小 batch 精修会扰动最优点 |
 | `ast_audioset_ft_v2_bs128_to_bs32_lr1e6_seed42` | 从 `bs128 best.pt` 接 `bs32, lr=1e-6, 1 epoch` | `0.9898` | `0.9897` | 温和精修略高于 bs128 |
+| `ast_audioset_ft_v2_bs128_seed7_to_bs32_lr1e6_seed7` | 从 `bs128 seed7 best.pt` 接 `bs32, lr=1e-6, 1 epoch` | `0.9930` | `0.9930` | 跨 seed 复验后成为当前最佳主 dev 结果 |
 
 为了检查 `0.9895+` 是否只是当前 dev 子集过拟合，又用官方 dev 中未进入当前 dev manifest 的样本做了两份 disjoint eval：
 
@@ -79,8 +80,10 @@
 | `bs128 best.pt` | `track2_dev_disjoint_cap500.csv` | `0.9895` | `0.9894` | 较大不重叠 dev remainder 仍高分 |
 | `bs128 -> bs32 lr1e-6 best.pt` | `track2_dev_disjoint_alt30.csv` | `0.9917` | `0.9917` | 温和精修在 disjoint 小切片上更好 |
 | `bs128 -> bs32 lr1e-6 best.pt` | `track2_dev_disjoint_cap500.csv` | `0.9926` | `0.9925` | 温和精修在较大 disjoint remainder 上也更好 |
+| `bs128 seed7 -> bs32 lr1e-6 best.pt` | `track2_dev_disjoint_alt30.csv` | `0.9875` | `0.9875` | 换 seed 的校准模型在完全不重叠小切片上仍高分 |
+| `bs128 seed7 -> bs32 lr1e-6 best.pt` | `track2_dev_disjoint_cap500.csv` | `0.9921` | `0.9920` | 换 seed 的校准模型在较大 disjoint remainder 上保持同一高水平 |
 
-阶段判断：`bs128` 不是单纯“把显存吃满”的工程优化，而是当前最有效的 AST 训练策略之一；`bs32, lr=1e-6, 1 epoch` 可以作为轻量校准尾巴保留。`bs128 seed7` 在 epoch 3 后下降到 `0.979` 左右，说明大 batch 也不能无脑多训，必须保留 best checkpoint / early stopping。`bs8, lr=5e-6, 3 epochs` 的下降说明两阶段训练可行，但小 batch 接管必须非常温和。
+阶段判断：`bs128` 不是单纯“把显存吃满”的工程优化，而是当前最有效的 AST 训练策略之一；`bs32, lr=1e-6, 1 epoch` 可以作为轻量校准尾巴保留。`bs128 seed7 -> bs32 lr1e-6` 达到 `0.9930`，说明温和校准不是 seed42 的偶然现象。`bs128 seed7` 在 epoch 3 后下降到 `0.979` 左右，说明大 batch 也不能无脑多训，必须保留 best checkpoint / early stopping。`bs8, lr=5e-6, 3 epochs` 的下降说明两阶段训练可行，但小 batch 接管必须非常温和。
 
 ## 4. 当前结论
 
@@ -100,7 +103,7 @@
 ### 直接结论
 
 - `AST` 已经不是“可试试的备选”，而是当前最明确的主线。
-- `AST` 的上限不在冻结线性头；一旦解冻 backbone，当前平衡子集上能直接到 `0.9533 / 0.9533`，大子集和大 batch 后已推进到 `0.9895+`。
+- `AST` 的上限不在冻结线性头；一旦解冻 backbone，当前平衡子集上能直接到 `0.9533 / 0.9533`，大子集和大 batch 后已推进到 `0.9930`。
 - `batch_size=128` 当前应视为主训练策略，而不是单纯提速技巧；它在单卡上吃满显存并刷新了主 dev 指标。
 - 对过拟合的担心目前被 disjoint dev 检查部分缓解：`bs128` 和 `bs128 -> bs32 lr1e-6` 在未重叠 dev 样本上仍保持 `0.9875` 到 `0.9926`。
 - `MERT-v1-330M` 仍然是最值得保留的 waveform 路线备选。

@@ -197,3 +197,23 @@
 - Log path: /root/autodl-tmp/ATADD/logs/ast_audioset_ft_v2_bs128_to_bs8_seed42.log and /root/autodl-tmp/ATADD/logs/ast_audioset_ft_v2_bs128_to_bs32_lr1e6_seed42.log
 - Output dir: /root/autodl-tmp/ATADD/outputs/track2_subset_ast_audioset_ft_v2_bs128_to_bs8_seed42 and /root/autodl-tmp/ATADD/outputs/track2_subset_ast_audioset_ft_v2_bs128_to_bs32_lr1e6_seed42
 - Next action: Prefer the gentle refinement if using a two-stage recipe. `bs8` reached only `accuracy=0.9875`, while `bs32, lr=1e-6, 1 epoch` reached `accuracy=0.98975` on the main dev and improved disjoint checks to `alt30 accuracy=0.9917`, `cap500 accuracy=0.9926`.
+
+---
+
+## 2026-05-13: Seed7 low-lr bs32 calibration confirms the two-stage AST recipe
+
+- Date: 2026-05-13
+- Experiment ID: exp_track2_ast_audioset_ft_v2_bs128_seed7_to_bs32_lr1e6_seed7
+- Model: ast_audioset_ft
+- Config: configs/experiments/ast_audioset_ft.yaml
+- Train Manifest: data/manifests/track2_train_balanced_2000.csv
+- Val Manifest: data/manifests/track2_dev_balanced_500.csv
+- Stage: train+eval
+- Device: server cuda, single NVIDIA RTX PRO 6000 Blackwell Server Edition
+- Symptom: Need to verify whether the successful `bs128 -> bs32, lr=1e-6, 1 epoch` calibration was specific to the seed42 checkpoint.
+- Root cause: Not a failure. This was a cross-seed validation of the two-stage AST recipe.
+- Fix: Start from `/root/autodl-tmp/ATADD/outputs/track2_subset_ast_audioset_ft_v2_bs128_seed7/best.pt`, then run `batch_size=32`, `lr=1e-6`, `epochs=1`.
+- Status: promoted
+- Log path: /root/autodl-tmp/ATADD/logs/ast_audioset_ft_v2_bs128_seed7_to_bs32_lr1e6_seed7.log
+- Output dir: /root/autodl-tmp/ATADD/outputs/track2_subset_ast_audioset_ft_v2_bs128_seed7_to_bs32_lr1e6_seed7
+- Next action: Treat `AST bs128 + gentle bs32 calibration` as the current primary recipe. The seed7 calibrated checkpoint reached `accuracy=0.9930`, `macro_f1=0.9930` on the main dev, and stayed strong on disjoint checks with `alt30 accuracy=0.9875`, `cap500 accuracy=0.9921`.
