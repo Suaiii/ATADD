@@ -108,6 +108,8 @@ Each run writes:
 - `training_log.csv`: epoch metrics
 - `run_summary.json`: final summary with timing and GPU memory
 - `eval_summary.json`: evaluation output from `run_eval`
+- `predict.csv`: competition-format predictions (`name,predict`)
+- `submission.zip`: zipped submission package containing `predict.csv`
 
 Reporting templates:
 
@@ -130,3 +132,47 @@ Use `docs/competition_brief.md` to fill:
 - hard constraints
 
 The challenge source link is already tracked in `memory.md`.
+
+## 8) Competition Submission
+
+Official Track 2 submission format:
+
+- upload a `.zip` file to Codabench
+- the zip must contain exactly one file named `predict.csv`
+- `predict.csv` format:
+
+```csv
+name,predict
+ATADD_T2_Eval_000001.flac,fake
+ATADD_T2_Eval_000002.flac,real
+```
+
+You can generate this from a checkpoint with either a manifest or a raw audio directory.
+
+Using a manifest:
+
+```bash
+PYTHONPATH=src python -m atadd.predict \
+  --config configs/experiments/ast_audioset_ft.yaml \
+  --checkpoint outputs/best_model/best.pt \
+  --manifest data/manifests/progress_manifest.csv \
+  --output-dir outputs/submission_progress \
+  --device cuda
+```
+
+Using an audio directory directly:
+
+```bash
+PYTHONPATH=src python -m atadd.predict \
+  --config configs/experiments/ast_audioset_ft.yaml \
+  --checkpoint outputs/best_model/best.pt \
+  --audio-dir /path/to/progress_audio \
+  --output-dir outputs/submission_progress \
+  --device cuda
+```
+
+The script writes:
+
+- `predict.csv`
+- `submission.zip`
+- `predict_summary.json`
