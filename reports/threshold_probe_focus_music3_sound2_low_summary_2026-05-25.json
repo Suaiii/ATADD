@@ -1,0 +1,61 @@
+{
+  "source": "outputs/submission_track2_progress_ast_focus_music3_sound2_probs_v1/predict.csv",
+  "n": 45875,
+  "thresholds": {
+    "0.3": {
+      "outdir": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p3_v1",
+      "submission_zip": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p3_v1/submission.zip",
+      "changed_vs_0.5": 267,
+      "changed_vs_0.35": 71,
+      "counts": {
+        "fake": 28227,
+        "real": 17648
+      },
+      "zip_size": 128505
+    },
+    "0.25": {
+      "outdir": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p25_v1",
+      "submission_zip": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p25_v1/submission.zip",
+      "changed_vs_0.5": 356,
+      "changed_vs_0.35": 160,
+      "counts": {
+        "fake": 28316,
+        "real": 17559
+      },
+      "zip_size": 128516
+    },
+    "0.2": {
+      "outdir": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p2_v1",
+      "submission_zip": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p2_v1/submission.zip",
+      "changed_vs_0.5": 480,
+      "changed_vs_0.35": 284,
+      "counts": {
+        "fake": 28440,
+        "real": 17435
+      },
+      "zip_size": 128514
+    },
+    "0.15": {
+      "outdir": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p15_v1",
+      "submission_zip": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p15_v1/submission.zip",
+      "changed_vs_0.5": 595,
+      "changed_vs_0.35": 399,
+      "counts": {
+        "fake": 28555,
+        "real": 17320
+      },
+      "zip_size": 128512
+    },
+    "0.1": {
+      "outdir": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p1_v1",
+      "submission_zip": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p1_v1/submission.zip",
+      "changed_vs_0.5": 739,
+      "changed_vs_0.35": 543,
+      "counts": {
+        "fake": 28699,
+        "real": 17176
+      },
+      "zip_size": 128537
+    }
+  }
+}

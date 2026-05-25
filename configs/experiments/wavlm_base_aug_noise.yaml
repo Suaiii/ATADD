@@ -1,6 +1,6 @@
 model:
   name: wavlm_base_aug_noise
-  pretrained_name: microsoft/wavlm-base
+  pretrained_name: ./pretrained/wavlm-base
   freeze_backbone: true
   dropout: 0.1
 

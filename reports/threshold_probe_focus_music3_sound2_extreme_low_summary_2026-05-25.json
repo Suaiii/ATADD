@@ -1,0 +1,72 @@
+{
+  "source": "outputs/submission_track2_progress_ast_focus_music3_sound2_probs_v1/predict.csv",
+  "n": 45875,
+  "thresholds": {
+    "0.0003": {
+      "outdir": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p0003_v1",
+      "submission_zip": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p0003_v1/submission.zip",
+      "changed_vs_0.0005": 255,
+      "changed_vs_0.001": 594,
+      "counts": {
+        "fake": 31286,
+        "real": 14589
+      },
+      "zip_size": 128831
+    },
+    "0.0002": {
+      "outdir": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p0002_v1",
+      "submission_zip": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p0002_v1/submission.zip",
+      "changed_vs_0.0005": 484,
+      "changed_vs_0.001": 823,
+      "counts": {
+        "fake": 31515,
+        "real": 14360
+      },
+      "zip_size": 128827
+    },
+    "0.0001": {
+      "outdir": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p0001_v1",
+      "submission_zip": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p0001_v1/submission.zip",
+      "changed_vs_0.0005": 952,
+      "changed_vs_0.001": 1291,
+      "counts": {
+        "fake": 31983,
+        "real": 13892
+      },
+      "zip_size": 128828
+    },
+    "5e-05": {
+      "outdir": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p00005_v1",
+      "submission_zip": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p00005_v1/submission.zip",
+      "changed_vs_0.0005": 1499,
+      "changed_vs_0.001": 1838,
+      "counts": {
+        "fake": 32530,
+        "real": 13345
+      },
+      "zip_size": 128852
+    },
+    "2e-05": {
+      "outdir": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p00002_v1",
+      "submission_zip": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p00002_v1/submission.zip",
+      "changed_vs_0.0005": 2306,
+      "changed_vs_0.001": 2645,
+      "counts": {
+        "fake": 33337,
+        "real": 12538
+      },
+      "zip_size": 128846
+    },
+    "1e-05": {
+      "outdir": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p00001_v1",
+      "submission_zip": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p00001_v1/submission.zip",
+      "changed_vs_0.0005": 3038,
+      "changed_vs_0.001": 3377,
+      "counts": {
+        "fake": 34069,
+        "real": 11806
+      },
+      "zip_size": 128840
+    }
+  }
+}

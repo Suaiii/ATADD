@@ -6,7 +6,9 @@ param(
     [string]$Device = "cuda",
     [ValidateSet("manifest", "audio-dir")][string]$Mode = "manifest",
     [int]$BatchSize = 0,
-    [switch]$Offline
+    [switch]$Offline,
+    [double]$FakeThreshold = 0.5,
+    [switch]$SaveProbs
 )
 
 $root = Split-Path -Parent $PSScriptRoot
@@ -22,7 +24,8 @@ $args = @(
     "--config", $Config,
     "--checkpoint", $Checkpoint,
     "--output-dir", $OutputDir,
-    "--device", $Device
+    "--device", $Device,
+    "--fake-threshold", "$FakeThreshold"
 )
 
 if ($Mode -eq "audio-dir") {
@@ -33,5 +36,6 @@ if ($Mode -eq "audio-dir") {
 
 if ($BatchSize -gt 0) { $args += @("--batch-size", $BatchSize) }
 if ($Offline) { $args += "--offline" }
+if ($SaveProbs) { $args += "--save-probs" }
 
 python @args

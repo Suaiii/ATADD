@@ -1,0 +1,60 @@
+{
+  "source": "outputs/submission_track2_progress_ast_focus_music3_sound2_probs_v1/predict.csv",
+  "n": 45875,
+  "base_counts": {
+    "fake": 27960,
+    "real": 17915
+  },
+  "thresholds": {
+    "0.55": {
+      "outdir": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p55_v1",
+      "submission_zip": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p55_v1/submission.zip",
+      "changed_vs_0.5": 58,
+      "counts": {
+        "fake": 27902,
+        "real": 17973
+      },
+      "zip_size": 128482
+    },
+    "0.5": {
+      "outdir": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p5_v1",
+      "submission_zip": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p5_v1/submission.zip",
+      "changed_vs_0.5": 0,
+      "counts": {
+        "fake": 27960,
+        "real": 17915
+      },
+      "zip_size": 128489
+    },
+    "0.45": {
+      "outdir": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p45_v1",
+      "submission_zip": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p45_v1/submission.zip",
+      "changed_vs_0.5": 60,
+      "counts": {
+        "fake": 28020,
+        "real": 17855
+      },
+      "zip_size": 128491
+    },
+    "0.4": {
+      "outdir": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p4_v1",
+      "submission_zip": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p4_v1/submission.zip",
+      "changed_vs_0.5": 122,
+      "counts": {
+        "fake": 28082,
+        "real": 17793
+      },
+      "zip_size": 128503
+    },
+    "0.35": {
+      "outdir": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p35_v1",
+      "submission_zip": "outputs/submission_track2_progress_ast_focus_music3_sound2_th0p35_v1/submission.zip",
+      "changed_vs_0.5": 196,
+      "counts": {
+        "fake": 28156,
+        "real": 17719
+      },
+      "zip_size": 128509
+    }
+  }
+}

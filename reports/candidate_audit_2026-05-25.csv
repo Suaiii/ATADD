@@ -1,0 +1,14 @@
+candidate,checkpoint,manifest,accuracy,macro_f1,track2_macro_f1,speech_macro_f1,sound_macro_f1,singing_macro_f1,music_macro_f1,loss
+focus_music3_sound2,track2_subset_ast_focus_music3_sound2_v1/best.pt,track2_dev_balanced_500_v3.csv,0.99575,0.99575,0.99575,0.99200,0.99800,0.99900,0.99400,0.01534
+focus_music3_sound2,track2_subset_ast_focus_music3_sound2_v1/best.pt,track2_dev_disjoint_alt30.csv,1.00000,1.00000,1.00000,1.00000,1.00000,1.00000,1.00000,0.00019
+focus_music3_sound2,track2_subset_ast_focus_music3_sound2_v1/best.pt,track2_dev_disjoint_cap500.csv,0.99576,0.99569,0.99162,0.99200,0.99600,1.00000,0.97850,0.01955
+focus_music3_sound2,track2_subset_ast_focus_music3_sound2_v1/best.pt,track2_dev_music_only.csv,0.99400,0.99400,0.99400,,,,0.99400,0.02170
+general_v3,track2_subset_ast_audioset_ft_v3_train4000_bs128_to_bs32_lr1e6_seed7/best.pt,track2_dev_balanced_500_v3.csv,0.99625,0.99625,0.99625,0.99300,0.99900,0.99800,0.99500,0.01539
+general_v3,track2_subset_ast_audioset_ft_v3_train4000_bs128_to_bs32_lr1e6_seed7/best.pt,track2_dev_disjoint_alt30.csv,1.00000,1.00000,1.00000,1.00000,1.00000,1.00000,1.00000,0.00062
+general_v3,track2_subset_ast_audioset_ft_v3_train4000_bs128_to_bs32_lr1e6_seed7/best.pt,track2_dev_disjoint_cap500.csv,0.99604,0.99597,0.99042,0.99300,0.99700,1.00000,0.97168,0.01665
+general_v3,track2_subset_ast_audioset_ft_v3_train4000_bs128_to_bs32_lr1e6_seed7/best.pt,track2_dev_music_only.csv,0.99500,0.99500,0.99500,,,,0.99500,0.01863
+music_specialist,track2_subset_ast_music_specialist_v1/best.pt,track2_dev_music_only.csv,0.99100,0.99100,0.99100,,,,0.99100,0.04337
+v2_seed7_calib,track2_subset_ast_audioset_ft_v2_bs128_seed7_to_bs32_lr1e6_seed7/best.pt,track2_dev_balanced_500_v3.csv,0.99300,0.99300,0.99300,0.98700,0.99500,0.99800,0.99200,0.03063
+v2_seed7_calib,track2_subset_ast_audioset_ft_v2_bs128_seed7_to_bs32_lr1e6_seed7/best.pt,track2_dev_disjoint_alt30.csv,0.98750,0.98750,0.98750,1.00000,0.94999,1.00000,1.00000,0.03535
+v2_seed7_calib,track2_subset_ast_audioset_ft_v2_bs128_seed7_to_bs32_lr1e6_seed7/best.pt,track2_dev_disjoint_cap500.csv,0.99208,0.99195,0.97899,0.98900,0.99400,0.99900,0.93397,0.02724
+v2_seed7_calib,track2_subset_ast_audioset_ft_v2_bs128_seed7_to_bs32_lr1e6_seed7/best.pt,track2_dev_music_only.csv,0.99200,0.99200,0.99200,,,,0.99200,0.03294

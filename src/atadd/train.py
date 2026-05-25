@@ -47,6 +47,7 @@ def evaluate(model, loader, device: torch.device, num_classes: int) -> Dict[str,
     total_loss = 0.0
     all_true = []
     all_pred = []
+    all_types = []
 
     for batch in loader:
         x = batch["input_values"].to(device)
@@ -57,10 +58,16 @@ def evaluate(model, loader, device: torch.device, num_classes: int) -> Dict[str,
         pred = torch.argmax(logits, dim=1)
         all_true.append(y.cpu().numpy())
         all_pred.append(pred.cpu().numpy())
+        all_types.extend(batch.get("types", []))
 
     y_true = np.concatenate(all_true)
     y_pred = np.concatenate(all_pred)
-    metrics = classification_metrics(y_true, y_pred, num_classes=num_classes)
+    metrics = classification_metrics(
+        y_true,
+        y_pred,
+        num_classes=num_classes,
+        sample_types=all_types if any(x is not None for x in all_types) else None,
+    )
     metrics["loss"] = total_loss / len(loader.dataset)
     return metrics
 
@@ -217,6 +224,7 @@ def main() -> None:
                 "val_loss",
                 "val_accuracy",
                 "val_macro_f1",
+                "val_track2_macro_f1",
                 "main_metric",
                 "main_metric_value",
             ],
@@ -228,15 +236,21 @@ def main() -> None:
                 "val_loss": f"{val_metrics['loss']:.6f}",
                 "val_accuracy": f"{val_metrics['accuracy']:.6f}",
                 "val_macro_f1": f"{val_metrics['macro_f1']:.6f}",
+                "val_track2_macro_f1": (
+                    f"{val_metrics['track2_macro_f1']:.6f}" if "track2_macro_f1" in val_metrics else ""
+                ),
                 "main_metric": cfg.train.main_metric,
                 "main_metric_value": f"{score:.6f}",
             },
         )
 
-        print(
+        msg = (
             f"[epoch {epoch}] train_loss={train_loss:.4f} "
             f"val_acc={val_metrics['accuracy']:.4f} val_f1={val_metrics['macro_f1']:.4f}"
         )
+        if "track2_macro_f1" in val_metrics:
+            msg += f" val_track2_f1={val_metrics['track2_macro_f1']:.4f}"
+        print(msg)
 
         if bad_epochs >= cfg.train.early_stop_patience:
             print(f"Early stopping triggered at epoch {epoch}")

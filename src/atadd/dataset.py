@@ -3,7 +3,7 @@ from __future__ import annotations
 import csv
 from dataclasses import dataclass
 from pathlib import Path
-from typing import Dict, List, Tuple
+from typing import Dict, List, Optional
 
 import torch
 import torchaudio
@@ -14,6 +14,8 @@ from torch.utils.data import Dataset
 class ManifestRow:
     audio_path: Path
     label: int
+    audio_type: Optional[str] = None
+    source_name: Optional[str] = None
 
 
 class AudioClassificationDataset(Dataset):
@@ -44,7 +46,16 @@ class AudioClassificationDataset(Dataset):
                 if not audio_path.is_absolute():
                     audio_path = self.manifest_path.parent / audio_path
                 label = int(item[self.label_column])
-                rows.append(ManifestRow(audio_path=audio_path, label=label))
+                audio_type = item.get("type")
+                source_name = item.get("source_name") or audio_path.name
+                rows.append(
+                    ManifestRow(
+                        audio_path=audio_path,
+                        label=label,
+                        audio_type=audio_type,
+                        source_name=source_name,
+                    )
+                )
         if not rows:
             raise ValueError(f"Empty manifest: {self.manifest_path}")
         return rows
@@ -73,11 +84,19 @@ class AudioClassificationDataset(Dataset):
         return {
             "input_values": wav,
             "label": torch.tensor(row.label, dtype=torch.long),
+            "type": row.audio_type,
+            "source_name": row.source_name or row.audio_path.name,
         }
 
 
-def collate_audio_batch(items: List[Dict[str, torch.Tensor]]) -> Dict[str, torch.Tensor]:
+def collate_audio_batch(items: List[Dict[str, object]]) -> Dict[str, object]:
     inputs = torch.stack([x["input_values"] for x in items], dim=0)
     labels = torch.stack([x["label"] for x in items], dim=0)
-    return {"input_values": inputs, "labels": labels}
-
+    types = [x.get("type") for x in items]
+    source_names = [str(x.get("source_name")) for x in items]
+    return {
+        "input_values": inputs,
+        "labels": labels,
+        "types": types,
+        "source_names": source_names,
+    }

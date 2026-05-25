@@ -77,6 +77,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument("--num-workers", default=None, type=int)
     p.add_argument("--pattern", default="*.flac", type=str)
     p.add_argument("--offline", action="store_true")
+    p.add_argument("--fake-threshold", default=0.5, type=float)
+    p.add_argument("--save-probs", action="store_true")
     return p.parse_args()
 
 
@@ -110,6 +112,8 @@ def run_predict(
     model: torch.nn.Module,
     loader: DataLoader,
     device: torch.device,
+    fake_threshold: float,
+    save_probs: bool,
 ) -> List[Dict[str, str]]:
     model.eval()
     predictions: List[Dict[str, str]] = []
@@ -117,20 +121,38 @@ def run_predict(
         x = batch["input_values"].to(device)
         names = batch["names"]
         logits = model(x)
-        pred = torch.argmax(logits, dim=1).tolist()
-        for name, pred_id in zip(names, pred):
+        probs = torch.softmax(logits, dim=1)
+        fake_probs = probs[:, 1]
+        pred = (fake_probs >= fake_threshold).long().tolist()
+        probs_cpu = probs.detach().cpu().tolist()
+        for name, pred_id, prob_row in zip(names, pred, probs_cpu):
             label_text = LABEL_TEXT.get(int(pred_id))
             if label_text is None:
                 raise ValueError(f"Unsupported predicted label id: {pred_id}")
-            predictions.append({"name": name, "predict": label_text})
+            row = {"name": name, "predict": label_text}
+            if save_probs:
+                row["prob_real"] = f"{float(prob_row[0]):.8f}"
+                row["prob_fake"] = f"{float(prob_row[1]):.8f}"
+            predictions.append(row)
     return predictions
 
 
 def write_predict_csv(path: Path, rows: List[Dict[str, str]]) -> None:
+    fieldnames = ["name", "predict"]
+    if rows and "prob_fake" in rows[0]:
+        fieldnames.extend(["prob_real", "prob_fake"])
+    with path.open("w", encoding="utf-8", newline="") as f:
+        writer = csv.DictWriter(f, fieldnames=fieldnames)
+        writer.writeheader()
+        writer.writerows(rows)
+
+
+def write_submission_csv(path: Path, rows: List[Dict[str, str]]) -> None:
     with path.open("w", encoding="utf-8", newline="") as f:
         writer = csv.DictWriter(f, fieldnames=["name", "predict"])
         writer.writeheader()
-        writer.writerows(rows)
+        for row in rows:
+            writer.writerow({"name": row["name"], "predict": row["predict"]})
 
 
 def write_submission_zip(zip_path: Path, csv_path: Path) -> None:
@@ -192,12 +214,22 @@ def main() -> None:
     checkpoint = torch.load(args.checkpoint, map_location=device)
     model.load_state_dict(checkpoint["model_state"], strict=True)
 
-    predictions = run_predict(model, loader=loader, device=device)
+    predictions = run_predict(
+        model,
+        loader=loader,
+        device=device,
+        fake_threshold=args.fake_threshold,
+        save_probs=args.save_probs,
+    )
 
     predict_csv = out_dir / "predict.csv"
     submission_zip = out_dir / "submission.zip"
     write_predict_csv(predict_csv, predictions)
-    write_submission_zip(submission_zip, predict_csv)
+    submission_csv = predict_csv
+    if args.save_probs:
+        submission_csv = out_dir / "submission_predict.csv"
+        write_submission_csv(submission_csv, predictions)
+    write_submission_zip(submission_zip, submission_csv)
 
     summary = {
         "model": cfg.model.name,
@@ -207,6 +239,8 @@ def main() -> None:
         "num_files": len(predictions),
         "predict_csv": str(predict_csv.resolve()),
         "submission_zip": str(submission_zip.resolve()),
+        "fake_threshold": args.fake_threshold,
+        "save_probs": args.save_probs,
     }
     save_json(out_dir / "predict_summary.json", summary)
     print(summary)

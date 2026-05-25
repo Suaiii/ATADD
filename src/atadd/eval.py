@@ -38,6 +38,7 @@ def run_eval(
     total_loss = 0.0
     all_true = []
     all_pred = []
+    all_types = []
 
     for batch in loader:
         x = batch["input_values"].to(device)
@@ -49,10 +50,16 @@ def run_eval(
         pred = torch.argmax(logits, dim=1)
         all_true.append(y.cpu().numpy())
         all_pred.append(pred.cpu().numpy())
+        all_types.extend(batch.get("types", []))
 
     y_true = np.concatenate(all_true)
     y_pred = np.concatenate(all_pred)
-    metrics = classification_metrics(y_true, y_pred, num_classes=num_classes)
+    metrics = classification_metrics(
+        y_true,
+        y_pred,
+        num_classes=num_classes,
+        sample_types=all_types if any(x is not None for x in all_types) else None,
+    )
     metrics["loss"] = total_loss / len(loader.dataset)
     return metrics
 
@@ -111,4 +118,3 @@ def main() -> None:
 
 if __name__ == "__main__":
     main()
-

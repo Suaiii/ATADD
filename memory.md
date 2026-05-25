@@ -40,3 +40,16 @@
 - 后续涉及长时间运行命令时，优先使用 `nohup`、`tmux`、`screen` 或后台日志重定向方式，而不是依赖前台终端会话。
 - 给出的运行方案默认包含日志文件路径、后台运行方式和结果检查命令。
 - 敏感凭据不写入版本控制文件；当前项目的本地私有凭据统一记录在 `.local/assistant_secrets.md`。
+
+## 2026-05-25 Track2 Progress 冲刺结论
+- 当前云端入口已切换为：`connect.bjb1.seetacloud.com:21190`，工作目录仍为 `/root/autodl-tmp/ATADD`。
+- 当前主线模型是 `AST AudioSet`，线上 progress 最优来自 `focus_music3_sound2` 路线，而不是早期 `general_v3`。
+- `focus_music3_sound2` 原始阈值提交线上约为：`macro_f1=73.22`，分项为 `speech=75.29`、`sound=70.80`、`singing=83.91`、`music=62.88`。
+- 阈值调低后持续提升，说明 progress 集上模型明显低估 `fake`，当前关键不是重训，而是基于 `prob_fake` 做 fake-sensitive threshold calibration。
+- 已知更强提交：
+  - `focus_music3_sound2_th0p35`: `macro_f1=73.65`
+  - `focus_music3_sound2_th0p01`: `macro_f1=76.76`
+  - `focus_music3_sound2_th0p0005`: `macro_f1=79.11`，分项为 `speech=78.09`、`sound=75.97`、`singing=92.95`、`music=69.42`
+- 当前 live best 是 `track2_progress_focus_music3_sound2_th0p0005_submission.zip`。
+- 当前最主要短板仍是 `music`，其次是 `sound`；但降阈值目前对四个 type 都有正收益，应继续往更低阈值小步探索，直到 leaderboard 出现过冲。
+- 本地提交包目录 `submissions/` 已将中高阈值冗余包归档到 `submissions/archive_thresholds_20260525/`，活跃目录优先保留低阈值候选。

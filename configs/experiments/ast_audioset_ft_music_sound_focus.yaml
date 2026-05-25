@@ -1,7 +1,9 @@
 model:
-  name: mert_base
-  pretrained_name: ./pretrained/mert-base
-  freeze_backbone: true
+  name: ast_audioset_ft
+  pretrained_name: MIT/ast-finetuned-audioset-10-10-0.4593
+  feature_extractor_name: MIT/ast-finetuned-audioset-10-10-0.4593
+  kind: spectrogram
+  freeze_backbone: false
   dropout: 0.1
 
 data:
@@ -12,13 +14,13 @@ data:
   label_column: label
 
 train:
-  epochs: 5
-  batch_size: 8
-  lr: 0.001
+  epochs: 1
+  batch_size: 32
+  lr: 0.000001
   weight_decay: 0.01
   grad_clip: 1.0
-  main_metric: accuracy
-  early_stop_patience: 10
+  main_metric: track2_macro_f1
+  early_stop_patience: 2
   num_workers: 2
 
 augment:
@@ -27,4 +29,3 @@ augment:
   noise_scale: 0.003
   gain_prob: 0.5
   gain_db: 6.0
-
